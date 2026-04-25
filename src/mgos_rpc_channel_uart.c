@@ -294,12 +294,19 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
       ucfg_t.rx_fc_type = ucfg_t.tx_fc_type =
           (enum mgos_uart_fc_type) ccfg->fc_type;
     }
+    /* Fork: aplicar pines del config si están definidos (>=0).
+     * Esto permite mover el UART de RPC sin chocar con los defaults
+     * del SoC (p.ej. UART1 default TX=26 colisiona con SPI MOSI). */
+    if (ccfg->rx_gpio >= 0) ucfg_t.dev.rx_gpio = ccfg->rx_gpio;
+    if (ccfg->tx_gpio >= 0) ucfg_t.dev.tx_gpio = ccfg->tx_gpio;
     ucfg = &ucfg_t;
   }
   if (!mgos_uart_configure(ccfg->uart_no, ucfg)) {
     LOG(LL_ERROR, ("UART%d init failed", ccfg->uart_no));
     return NULL;
   }
+  LOG(LL_INFO, ("UART%d RPC pines: rx=%d tx=%d", ccfg->uart_no,
+                (int) ucfg->dev.rx_gpio, (int) ucfg->dev.tx_gpio));
 
   struct mg_rpc_channel *ch = (struct mg_rpc_channel *) calloc(1, sizeof(*ch));
   ch->ch_connect = mg_rpc_channel_uart_ch_connect;
