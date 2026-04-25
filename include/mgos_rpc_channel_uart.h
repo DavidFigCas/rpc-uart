@@ -32,6 +32,8 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
     const struct mgos_config_rpc_uart *cfg,
     const struct mgos_uart_config *ucfg);
 
+struct mg_rpc_channel *mgos_rpc_uart_get_channel(void);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -328,6 +328,8 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
   return ch;
 }
 
+static struct mg_rpc_channel *s_uart_channel = NULL;
+
 bool mgos_rpc_uart_init(void) {
   const struct mgos_config_rpc *sccfg = mgos_sys_config_get_rpc();
   if (mgos_rpc_get_global() == NULL || sccfg->uart.uart_no < 0) return true;
@@ -343,5 +345,11 @@ bool mgos_rpc_uart_init(void) {
   mg_rpc_add_channel(mgos_rpc_get_global(), mg_mk_str(dst), uch);
   uch->ch_connect(uch);
 
+  s_uart_channel = uch;
+
   return true;
+}
+
+struct mg_rpc_channel *mgos_rpc_uart_get_channel(void) {
+  return s_uart_channel;
 }
