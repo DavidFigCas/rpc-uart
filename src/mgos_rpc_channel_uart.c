@@ -206,19 +206,16 @@ static bool mg_rpc_channel_uart_send_frame(struct mg_rpc_channel *ch,
   struct mg_rpc_channel_uart_data *chd =
       (struct mg_rpc_channel_uart_data *) ch->channel_data;
   if (!chd->connected || chd->sending) return false;
-  mbuf_append(&chd->send_mbuf, FRAME_DELIM_2, FRAME_DELIM_2_LEN);
-  if (chd->delim_1_used) {
-    mbuf_append(&chd->send_mbuf, FRAME_DELIM_1, FRAME_DELIM_1_LEN);
-  }
+
+  /* No enviar triple comillas ni saltos de línea iniciales (basura) */
   mbuf_append(&chd->send_mbuf, f.p, f.len);
+
   if (chd->crc_used) {
     char crc_hex[9];
     sprintf(crc_hex, "%08x", (unsigned int) cs_crc32(0, f.p, f.len));
     mbuf_append(&chd->send_mbuf, crc_hex, 8);
   }
-  if (chd->delim_1_used) {
-    mbuf_append(&chd->send_mbuf, FRAME_DELIM_1, FRAME_DELIM_1_LEN);
-  }
+
   mbuf_append(&chd->send_mbuf, FRAME_DELIM_2, FRAME_DELIM_2_LEN);
   chd->sending = chd->sending_user_frame = true;
 
