@@ -206,19 +206,16 @@ static bool mg_rpc_channel_uart_send_frame(struct mg_rpc_channel *ch,
   struct mg_rpc_channel_uart_data *chd =
       (struct mg_rpc_channel_uart_data *) ch->channel_data;
   if (!chd->connected || chd->sending) return false;
-  mbuf_append(&chd->send_mbuf, FRAME_DELIM_2, FRAME_DELIM_2_LEN);
-  if (chd->delim_1_used) {
-    mbuf_append(&chd->send_mbuf, FRAME_DELIM_1, FRAME_DELIM_1_LEN);
-  }
+
+  /* No enviar triple comillas ni saltos de línea iniciales (basura) */
   mbuf_append(&chd->send_mbuf, f.p, f.len);
+
   if (chd->crc_used) {
     char crc_hex[9];
     sprintf(crc_hex, "%08x", (unsigned int) cs_crc32(0, f.p, f.len));
     mbuf_append(&chd->send_mbuf, crc_hex, 8);
   }
-  if (chd->delim_1_used) {
-    mbuf_append(&chd->send_mbuf, FRAME_DELIM_1, FRAME_DELIM_1_LEN);
-  }
+
   mbuf_append(&chd->send_mbuf, FRAME_DELIM_2, FRAME_DELIM_2_LEN);
   chd->sending = chd->sending_user_frame = true;
 
@@ -302,6 +299,8 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
     LOG(LL_ERROR, ("UART%d init failed", ccfg->uart_no));
     return NULL;
   }
+  LOG(LL_INFO, ("UART%d RPC pines: rx=%d tx=%d", ccfg->uart_no,
+                (int) ucfg->dev.rx_gpio, (int) ucfg->dev.tx_gpio));
 
   struct mg_rpc_channel *ch = (struct mg_rpc_channel *) calloc(1, sizeof(*ch));
   ch->ch_connect = mg_rpc_channel_uart_ch_connect;
@@ -343,5 +342,11 @@ bool mgos_rpc_uart_init(void) {
                      mg_mk_str(mgos_sys_config_get_rpc_uart_dst()), uch);
   uch->ch_connect(uch);
 
+  s_uart_channel = uch;
+
   return true;
+}
+
+struct mg_rpc_channel *mgos_rpc_uart_get_channel(void) {
+  return s_uart_channel;
 }
