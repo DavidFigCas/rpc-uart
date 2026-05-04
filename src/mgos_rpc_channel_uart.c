@@ -346,7 +346,3 @@ bool mgos_rpc_uart_init(void) {
 
   return true;
 }
-
-struct mg_rpc_channel *mgos_rpc_uart_get_channel(void) {
-  return s_uart_channel;
-}
