@@ -294,6 +294,8 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
       ucfg_t.rx_fc_type = ucfg_t.tx_fc_type =
           (enum mgos_uart_fc_type) ccfg->fc_type;
     }
+    if (ccfg->rx_gpio >= 0) ucfg_t.dev.rx_gpio = (int8_t) ccfg->rx_gpio;
+    if (ccfg->tx_gpio >= 0) ucfg_t.dev.tx_gpio = (int8_t) ccfg->tx_gpio;
     ucfg = &ucfg_t;
   }
   if (!mgos_uart_configure(ccfg->uart_no, ucfg)) {
@@ -321,6 +323,12 @@ struct mg_rpc_channel *mg_rpc_channel_uart(
   return ch;
 }
 
+static struct mg_rpc_channel *s_uart_channel = NULL;
+
+struct mg_rpc_channel *mgos_rpc_uart_get_channel(void) {
+  return s_uart_channel;
+}
+
 bool mgos_rpc_uart_init(void) {
   const struct mgos_config_rpc *sccfg = mgos_sys_config_get_rpc();
   if (mgos_rpc_get_global() == NULL || sccfg->uart.uart_no < 0) return true;
@@ -330,6 +338,7 @@ bool mgos_rpc_uart_init(void) {
     return false;
   }
 
+  s_uart_channel = uch;
   mg_rpc_add_channel(mgos_rpc_get_global(),
                      mg_mk_str(mgos_sys_config_get_rpc_uart_dst()), uch);
   uch->ch_connect(uch);

@@ -13,6 +13,8 @@ config_schema:
   - ["rpc.uart.baud_rate", "i", 115200, {title: "Baud rate"}]
   - ["rpc.uart.fc_type", "i", 2, {title: "Flow control: 0 - none, 1 - CTS/RTS, 2 - XON/XOFF"}]
   - ["rpc.uart.dst", "s", "", {title: "Destination reachable via this channel"}]
+  - ["rpc.uart.rx_gpio", "i", -1, {title: "RX GPIO (-1 = default for UART number)"}]
+  - ["rpc.uart.tx_gpio", "i", -1, {title: "TX GPIO (-1 = default for UART number)"}]
 
 libs:
   - location: https://github.com/mongoose-os-libs/rpc-common
